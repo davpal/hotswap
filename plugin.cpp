@@ -8,5 +8,5 @@ extern "C" void on_load()
 extern "C" void fun()
 {
     puts(__PRETTY_FUNCTION__);
-    puts("WJEZDZAMY");
+    puts(">>>>");
 }

@@ -5,7 +5,10 @@
 #include <thread>
 #include "plugin.h"
 
-std::function<void()> load_plugin();
+void* load_plugin();
+void  unload_plugin(void*);
+std::function<void()> load_function(void*, const char*);
+
 
 int main(int argc, char * argv[])
 {
@@ -13,8 +16,10 @@ int main(int argc, char * argv[])
     std::atomic<bool> running {true};
     std::thread t([&running] {
         while(running) {
-            auto f = load_plugin();
+            auto p = load_plugin();
+            auto f = load_function(p, "fun");
             f(); // ooooo!!
+            unload_plugin(p);
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
     });
@@ -28,19 +33,28 @@ int main(int argc, char * argv[])
     t.join();
 }
 
-std::function<void()> load_plugin()
+void* load_plugin()
 {
     auto plugin = dlopen("./plugin.so", RTLD_NOW);
     if (!plugin) {
         fprintf(stderr, "Failed to load plugin %s.\n", dlerror());
-        return []{};
     }
 
-    auto fptr = reinterpret_cast<void(*)()>(dlsym(plugin, "fun"));
+    return plugin;
+}
+
+std::function<void()> load_function(void* plugin, const char* f)
+{
+    auto fptr = reinterpret_cast<void(*)()>(dlsym(plugin, f));
     if (!fptr) {
         fprintf(stderr, "Failed to load symbol %s.\n", dlerror());
         return []{};
     }
 
     return std::function<void()>(fptr);
+}
+
+void unload_plugin(void* p)
+{
+    dlclose(p);
 }
