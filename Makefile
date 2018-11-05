@@ -2,13 +2,13 @@
 
 all: hotswap plugin.so
 
-CXXFLAGS=-Wall -Werror
+CXXFLAGS=-g -Wall -Werror -fpic -pipe
 INITFUN=on_load
 
 plugin.so: plugin.cpp
 	$(CXX) $(CFLAGS) $(CXXFLAGS) -shared $< -o $@ -Wl,-init,$(INITFUN)
 
-LDFLAGS=-ldl
+LDFLAGS=-ldl -lpthread
 hotswap: hotswap.cpp
 
 .PHONY: clean
