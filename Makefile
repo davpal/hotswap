@@ -1,6 +1,6 @@
 .PHONY: all
 
-all: plugin.so
+all: hotswap plugin.so
 
 CXXFLAGS=-Wall -Werror
 INITFUN=on_load
@@ -8,6 +8,8 @@ INITFUN=on_load
 plugin.so: plugin.cpp
 	$(CXX) $(CFLAGS) $(CXXFLAGS) -shared $< -o $@ -Wl,-init,$(INITFUN)
 
+hotswap: hotswap.cpp
+
 .PHONY: clean
 clean:
-	rm -rf plugin.so
+	rm -rf plugin.so hotswap
